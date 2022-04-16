@@ -2,6 +2,9 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link  } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { useRecoilState } from 'recoil';
+import axios from 'axios';
+//@ts-ignore
+import { Service } from 'axios-middleware';
 import { darkBlueTheme, mediumBlueRedTheme, darkWhiteTheme, navyWhiteTheme } from './themes/MaterialUI';
 import SignIn from './pages/SignIn';
 import Home from './pages/Home';
@@ -23,6 +26,7 @@ function App() {
   const [authState, setAuthState] = useRecoilState(rclStateAuth);
   const [signOut, setSignOut] = useRecoilState(rclSignOut);
   const [guestMode, setGuestMode] = useRecoilState(rclStateGuestMode);
+  const axiosService = new Service(axios);
   console.log(authState.isSignedIn);
   console.log(authState.signedInUsername);
 
@@ -32,11 +36,17 @@ function App() {
       if (cognitoUser) {  // Already signed in.
         cognitoUser.getSession((err: any, session: any) => {
           if (session.isValid()) {
-            // setAccessToken(session.accessToken.jwtToken);
             setAuthState({
               isSignedIn: true,
               signedInUsername: cognitoUser.getUsername(),
-              accessToken: session.accessToken.jwtToken,
+              // accessToken: session.accessToken.jwtToken,
+              accessToken: session.idToken.jwtToken,
+            });
+            axiosService.register({
+              onRequest(config: any) {
+                config.headers['Authorization'] = `Bearer ${session.idToken.jwtToken}`;
+                return config;
+              }
             });
           } else {
             setSignOut(true);

@@ -9,10 +9,13 @@ import {
   CognitoUser,
   AuthenticationDetails
 } from 'amazon-cognito-identity-js';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import axios from 'axios';
+//@ts-ignore
+import { Service } from 'axios-middleware';
 import '../App.css';
 import { userPool } from '../aws/Cognito';
 import { rclStateAuth, rclStateGuestMode } from '../states/States';
-import { useRecoilState, useRecoilValue } from 'recoil';
 
 
 interface Props {};
@@ -20,11 +23,12 @@ interface Props {};
 const SignIn: React.FC<Props> = (props: Props) => {
   const [authState, setAuthState] = useRecoilState(rclStateAuth);
   const [guestMode, setGuestMode] = useRecoilState(rclStateGuestMode);
-  const [username, setUserName] = React.useState<string>('')
-  const [password, setPassword] = React.useState<string>('')
-  const [errMsg, setErrMsg] = React.useState<string>('')
-  const changedUserNameHaldler = (e: any) => setUserName(e.target.value)
-  const changedPasswordHandler = (e: any) => setPassword(e.target.value)
+  const [username, setUserName] = React.useState<string>('');
+  const [password, setPassword] = React.useState<string>('');
+  const [errMsg, setErrMsg] = React.useState<string>('');
+  const changedUserNameHaldler = (e: any) => setUserName(e.target.value);
+  const changedPasswordHandler = (e: any) => setPassword(e.target.value);
+  const axiosService = new Service(axios);
 
   const signIn = () => {
     const authenticationDetails = new AuthenticationDetails({
@@ -40,13 +44,20 @@ const SignIn: React.FC<Props> = (props: Props) => {
       onSuccess: (result: any) => {
         // login success
         console.log('result: ' + result)
-        const accessToken = result.getAccessToken().getJwtToken()
-        console.log('AccessToken: ' + accessToken)
+        const accessToken = result.getAccessToken().getJwtToken();
+        const idToken = result.idToken.jwtToken;
+        console.log('idToken: ' + idToken)
         setErrMsg('');
         setAuthState({
           isSignedIn: true,
           signedInUsername: username,
-          accessToken: accessToken,
+          accessToken: idToken,
+        });
+        axiosService.register({
+          onRequest(config: any) {
+            config.headers['Authorization'] = `Bearer ${idToken}`;
+            return config;
+          }
         });
       },
       onFailure: (err: any) => {

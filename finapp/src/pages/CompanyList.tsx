@@ -56,12 +56,12 @@ const CompanyList: React.FC<Props> = (props: Props) => {
             </Paper>
           </Grid>
           <Grid item xs={12} md={12} lg={12} >
-            {`${companyListErrMsg}`}
             <Paper
               elevation={3}
               style={{padding: "10px", margin: "10px 0px 0px 0px", height: 700, overflow: 'auto'}}
               sx={{ border: 5, borderColor: 'primary.main', backgroundColor: 'primary.main' }}
             >
+              <div style={{color:'red', fontWeight:'bold', marginBottom: 10, fontSize: 14}}>{`${companyListErrMsg}`}</div>
               {
                 companyListData ?
                   <CompanyListTable data={companyListData}/>

@@ -16,15 +16,19 @@ class StockAPI {
     });
   }
 
-  async getCompanyList() {
+  async getCompanyList(accessToken?: string) {
     return this.baseAPI.get('company')
   }
 
-  async getSectorList() {
+  async getSectorList(accessToken?: string) {
     return this.baseAPI.get('sector')
   }
 
-  async getStockprice(code: number, year?: number, month?: number, day?: number) {
+  async getStockprice(
+    code: number,
+    year?: number, month?: number, day?: number,
+    accessToken?: string,
+  ) {
     const params: any = {}
     if (year) {
       params['year'] = year
